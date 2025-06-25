@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Educational Content Analyzer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .text-input-area {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 2px solid #e9ecef;
+        }
+        
+        .text-input-area h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            resize: vertical;
+            font-family: inherit;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+            background: linear-gradient(45deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+        }
+        
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: linear-gradient(45deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            transform: translateY(-2px);
+        }
+        
+        .upload-area.dragover {
+            background: linear-gradient(45deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15));
+            border-color: #764ba2;
+        }
+        
+        input[type="file"] {
+            display: none;
+        }
+        
+        .upload-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .file-list {
+            margin: 20px 0;
+        }
+        
+        .file-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        
+        .file-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .analyze-btn {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2em;
+            cursor: pointer;
+            width: 100%;
+            margin: 20px 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        }
+        
+        .analyze-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+        }
+        
+        .analyze-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .results {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .results h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .copy-btn {
+            background: linear-gradient(45deg, #17a2b8, #138496);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .copy-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(23, 162, 184, 0.3);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .sheet-format {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+        
+        .url-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+        
+        .url-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .add-url-btn {
+            background: linear-gradient(45deg, #fd7e14, #e55353);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .add-url-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(253, 126, 20, 0.3);
+        }
+
+        .ai-notice {
+            background: linear-gradient(45deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border: 1px solid #667eea;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .ai-notice h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 Educational Content Analyzer</h1>
+        
+        <div class="ai-notice">
+            <h4>🤖 AI-Powered Analysis</h4>
+            <p>This tool uses advanced AI models running directly in your browser - no API keys required!</p>
+            <p><small>Note: The first analysis may take a moment as the AI model loads.</small></p>
+        </div>
+
+        <div class="text-input-area">
+            <h3>📝 Paste Your Educational Content</h3>
+            <textarea id="textInput" placeholder="Paste your educational content here (course descriptions, syllabi, lecture notes, etc.) and click 'Analyze Content' to get insights...
+
+Example: Copy and paste text from:
+- Course syllabi
+- Lecture transcripts  
+- Educational articles
+- Study materials
+- Assignment descriptions"></textarea>
+        </div>
+        
+        <div class="upload-area" id="uploadArea">
+            <h3>Or drop text files here</h3>
+            <p>Supports: TXT files</p>
+            <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                Choose Files
+            </button>
+            <input type="file" id="fileInput" multiple accept=".txt">
+        </div>
+        
+        <div>
+            <h3>Or add web links:</h3>
+            <div style="display: flex; align-items: center;">
+                <input type="url" class="url-input" id="urlInput" placeholder="Enter web link to educational content...">
+                <button class="add-url-btn" onclick="addUrl()">Add Link</button>
+            </div>
+        </div>
+        
+        <div class="file-list" id="fileList"></div>
+        
+        <button class="analyze-btn" id="analyzeBtn" onclick="analyzeContent()">
+            🔍 Analyze Content
+        </button>
+        
+        <div id="results" style="display: none;">
+        </div>
+    </div>
+
+    <script type="module">
+        import { pipeline } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
+
+        let uploadedFiles = [];
+        let urlList = [];
+        let summarizer = null;
+        
+        // Initialize the AI model
+        async function initAI() {
+            try {
+                console.log('Loading AI model...');
+                summarizer = await pipeline('summarization', 'Xenova/distilbart-cnn-6-6');
+                console.log('AI model loaded successfully!');
+            } catch (error) {
+                console.error('Error loading AI model:', error);
+            }
+        }
+        
+        // Load AI model when page loads
+        initAI();
+        
+        // File upload handling
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const textInput = document.getElementById('textInput');
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+        
+        function handleFiles(files) {
+            Array.from(files).forEach(file => {
+                if (file.type === 'text/plain' && !uploadedFiles.find(f => f.name === file.name && f.size === file.size)) {
+                    uploadedFiles.push(file);
+                }
+            });
+            updateFileList();
+        }
+        
+        window.addUrl = function() {
+            const urlInput = document.getElementById('urlInput');
+            const url = urlInput.value.trim();
+            
+            if (url && !urlList.includes(url)) {
+                urlList.push(url);
+                urlInput.value = '';
+                updateFileList();
+            }
+        }
+        
+        function updateFileList() {
+            fileList.innerHTML = '';
+            
+            uploadedFiles.forEach((file, index) => {
+                const item = document.createElement('div');
+                item.className = 'file-item';
+                item.innerHTML = `
+                    <span>📄 ${file.name} (${(file.size / 1024).toFixed(2)} KB)</span>
+                    <button onclick="removeFile(${index})" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">Remove</button>
+                `;
+                fileList.appendChild(item);
+            });
+            
+            urlList.forEach((url, index) => {
+                const item = document.createElement('div');
+                item.className = 'file-item';
+                const displayUrl = url.length > 50 ? url.substring(0, 50) + '...' : url;
+                item.innerHTML = `
+                    <span>🔗 ${displayUrl}</span>
+                    <button onclick="removeUrl(${index})" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">Remove</button>
+                `;
+                fileList.appendChild(item);
+            });
+        }
+        
+        window.removeFile = function(index) {
+            uploadedFiles.splice(index, 1);
+            updateFileList();
+        }
+        
+        window.removeUrl = function(index) {
+            urlList.splice(index, 1);
+            updateFileList();
+        }
+        
+        async function readFileContent(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.onerror = reject;
+                reader.readAsText(file);
+            });
+        }
+        
+        async function analyzeWithAI(text) {
+            if (!summarizer) {
+                throw new Error('AI model not loaded yet. Please try again in a moment.');
+            }
+            
+            // Split text into chunks if it's too long (max ~1000 chars per chunk)
+            const maxChunkLength = 1000;
+            const chunks = [];
+            
+            for (let i = 0; i < text.length; i += maxChunkLength) {
+                chunks.push(text.slice(i, i + maxChunkLength));
+            }
+            
+            const summaries = [];
+            for (const chunk of chunks) {
+                if (chunk.trim().length > 50) { // Only process meaningful chunks
+                    const result = await summarizer(chunk, {
+                        max_length: 100,
+                        min_length: 30,
+                        do_sample: false
+                    });
+                    summaries.push(result[0].summary_text);
+                }
+            }
+            
+            return summaries.join(' ');
+        }
+        
+        window.analyzeContent = async function() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.style.display = 'block';
+            resultsDiv.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Analyzing content with AI... This may take a moment.</p>
+                </div>
+            `;
+            
+            try {
+                let allText = textInput.value.trim();
+                
+                // Read uploaded files
+                for (const file of uploadedFiles) {
+                    const fileContent = await readFileContent(file);
+                    allText += '\n\n' + fileContent;
+                }
+                
+                // For URLs, we'll show a message (actual web scraping would need a backend)
+                if (urlList.length > 0) {
+                    allText += '\n\nNote: URL content analysis requires a backend service.';
+                }
+                
+                if (!allText.trim()) {
+                    resultsDiv.innerHTML = `
+                        <h3>❌ No Content to Analyze</h3>
+                        <p>Please enter some text or upload a file to analyze.</p>
+                    `;
+                    return;
+                }
+                
+                let analysis;
+                if (allText.length > 100) {
+                    // Use AI for longer content
+                    const aiSummary = await analyzeWithAI(allText);
+                    analysis = generateEducationalAnalysis(allText, aiSummary);
+                } else {
+                    // Use simple analysis for short content
+                    analysis = generateEducationalAnalysis(allText);
+                }
+                
+                resultsDiv.innerHTML = `
+                    <h3>📊 Educational Content Analysis</h3>
+                    <div class="sheet-format" id="analysisText">${analysis}</div>
+                    <button class="copy-btn" onclick="copyToClipboard()">📋 Copy for Google Sheets</button>
+                `;
+                
+            } catch (error) {
+                console.error('Analysis error:', error);
+                resultsDiv.innerHTML = `
+                    <h3>❌ Analysis Error</h3>
+                    <p>Error: ${error.message}</p>
+                    <p>Please try again with shorter content or check your internet connection.</p>
+                `;
+            }
+        }
+        
+        function generateEducationalAnalysis(originalText, aiSummary = null) {
+            const wordCount = originalText.split(/\s+/).length;
+            const readingTime = Math.ceil(wordCount / 200); // Average reading speed
+            
+            // Extract key topics (simple keyword extraction)
+            const commonEducationalTerms = [
+                'course', 'lesson', 'assignment', 'exam', 'quiz', 'project', 'discussion',
+                'learning', 'objective', 'outcome', 'skill', 'knowledge', 'understanding',
+                'analysis', 'research', 'study', 'education', 'academic', 'student'
+            ];
+            
+            const foundTerms = commonEducationalTerms.filter(term => 
+                originalText.toLowerCase().includes(term)
+            );
+            
+            const summary = aiSummary || `Content covers ${foundTerms.slice(0, 3).join(', ')} with emphasis on practical application and learning outcomes.`;
+            
+            return `Content Type\tEducational Material
+Word Count\t${wordCount} words
+Estimated Reading Time\t${readingTime} minutes
+AI Summary\t${summary}
+Key Topics Identified\t${foundTerms.slice(0, 5).join(', ') || 'General educational content'}
+Complexity Level\t${wordCount > 500 ? 'Intermediate' : 'Basic'}
+Recommended Use\t${wordCount > 1000 ? 'Comprehensive study material' : 'Quick reference or introduction'}
+Assessment Suggestion\t${wordCount > 800 ? 'Written assignment or project-based assessment' : 'Quiz or short discussion'}
+Target Audience\t${originalText.toLowerCase().includes('beginner') ? 'Beginners' : 'General learners'}`;
+        }
+        
+        window.copyToClipboard = function() {
+            const text = document.getElementById('analysisText').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✅ Copied!';
+                btn.style.background = '#28a745';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = 'linear-gradient(45deg, #17a2b8, #138496)';
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>
